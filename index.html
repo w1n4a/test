@@ -4,100 +4,82 @@
     <meta charset="UTF-8">
     <title>Поймай квадрат!</title>
     <style>
-        /* Оформление внешнего вида */
         body { 
             text-align: center; 
             font-family: Arial, sans-serif; 
             background: #1a1a1a; 
             color: white; 
-            margin: 0;
-            overflow: hidden; /* Чтобы не было полос прокрутки */
+            margin: 0; 
+            overflow: hidden; 
         }
         canvas { 
             border: 3px solid #4CAF50; 
             background: #000; 
-            display: block;
-            margin: 20px auto;
-            touch-action: none; /* Чтобы удобно было играть с телефона */
+            display: block; 
+            margin: 20px auto; 
+            touch-action: none; 
         }
         h1 { margin-top: 20px; }
     </style>
 </head>
 <body>
-
     <h1>Счёт: <span id="score">0</span></h1>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
-    <p>Кликай по красному квадрату!</p>
+    <p>Кликай по цветному квадрату!</p>
 
     <script>
-        // ЛОГИКА ИГРЫ
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreDisplay = document.getElementById('score');
 
         let score = 0;
-        let target = {
-            x: 180,
-            y: 180,
-            size: 50,
-            color: '#ff4d4d'
-        };
+        let target = { x: 0, y: 0, size: 50, color: '#ff4d4d' };
 
-        // Рисуем всё на экране
         function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Очистка поля
-            
-            // Рисуем квадрат
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = target.color;
             ctx.shadowBlur = 15;
             ctx.shadowColor = target.color;
             ctx.fillRect(target.x, target.y, target.size, target.size);
         }
 
-        // Обработка клика или касания
         function handleInput(e) {
-            // Получаем координаты клика относительно канваса
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.clientX || e.touches[0].clientX;
-            const clientY = e.clientY || e.touches[0].clientY;
+            // Поддержка и мышки, и пальца
+            const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+            const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
             
             const mouseX = clientX - rect.left;
             const mouseY = clientY - rect.top;
 
-            // Проверка попадания
             if (mouseX >= target.x && mouseX <= target.x + target.size &&
                 mouseY >= target.y && mouseY <= target.y + target.size) {
-                
                 score++;
                 scoreDisplay.innerText = score;
                 teleportTarget();
             }
         }
 
-        // Перемещение квадрата в случайное место
         function teleportTarget() {
             target.x = Math.random() * (canvas.width - target.size);
             target.y = Math.random() * (canvas.height - target.size);
-            
-            // Немного меняем цвет для интереса
             const colors = ['#ff4d4d', '#4dff88', '#4d94ff', '#ffff4d'];
             target.color = colors[Math.floor(Math.random() * colors.length)];
         }
 
-        // Слушатели событий (мышь и тачскрин)
         canvas.addEventListener('mousedown', handleInput);
         canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Чтобы страница не дергалась при нажатии
+            e.preventDefault();
             handleInput(e);
         });
 
-        // Главный цикл (обновление картинки)
+        // ЗАПУСК
+        teleportTarget(); // Сначала создаем квадрат
         function gameLoop() {
             draw();
             requestAnimationFrame(gameLoop);
         }
-
-        gameLoop();
+        gameLoop(); // Потом запускаем отрисовку
     </script>
 </body>
 </html>
